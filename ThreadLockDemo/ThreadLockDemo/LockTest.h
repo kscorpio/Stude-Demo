@@ -15,4 +15,9 @@
 
 
 - (void)testSemaphore;
+
+- (void)testPthread_mutex;
+
+-(void)testNSConditionLock;
+-(void)testNSRecursiveLock;
 @end

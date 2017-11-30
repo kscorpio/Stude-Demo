@@ -7,8 +7,10 @@
 //
 
 #import "LockTest.h"
+#import <pthread/pthread.h>
 @interface LockTest(){
  dispatch_semaphore_t semaphore;
+    pthread_mutex_t mutex_t;
     
 }
 @property(nonatomic,strong)NSLock * lock;
@@ -31,7 +33,7 @@
          NSLog(@"Test Synchronized 1 end");
      });
     
-    dispatch_async(dispatch_get_global_queue(0,DISPATCH_QUEUE_PRIORITY_DEFAULT), ^{
+    dispatch_async(dispatch_get_global_queue(0,DISPATCH_QUEUE_PRIORITY_HIGH), ^{
         NSLog(@"Test Synchronized 2 prepare");
         [self SynchronizedCase:@"2" wait:0];
         NSLog(@"Test Synchronized 2 end");
@@ -50,8 +52,9 @@
         }
     }
 }
-#pragma mark -   NSLock
+#pragma mark -   NSLock  NSCondition
 - (void)testNSLock{
+    //!  类似。NSCondition
     //!
     //!  NSLock中实现了一个简单的互斥锁
     //!     Test NSLock 1 prepare
@@ -138,9 +141,90 @@
      */
     dispatch_semaphore_signal(semaphore);
 }
+#pragma mark - pthread_mutex
+
+- (void)testPthread_mutex{
+   __block pthread_mutex_t lock;
+    pthread_mutex_init(&lock, NULL);
+    dispatch_async(dispatch_get_global_queue(0,DISPATCH_QUEUE_PRIORITY_DEFAULT), ^{
+        NSLog(@"Test pthread_mutex 1 prepare  %@",[NSThread currentThread]);
+        pthread_mutex_lock(&lock);
+        NSLog(@"Test pthread_mutex 1 Run");
+        sleep(3);
+        pthread_mutex_unlock(&lock);
+      NSLog(@"Test pthread_mutex 1 end");
+    });
+    dispatch_async(dispatch_get_global_queue(0,DISPATCH_QUEUE_PRIORITY_DEFAULT), ^{
+        NSLog(@"Test pthread_mutex 2 prepare  %@",[NSThread currentThread]);
+        pthread_mutex_lock(&lock);
+        NSLog(@"Test pthread_mutex 2 Run");
+        
+        pthread_mutex_unlock(&lock);
+        NSLog(@"Test pthread_mutex 2 end");
+    });
+    
+    
+    
+}
 #pragma mark -
-#pragma mark -
-#pragma mark -
+
+- (void)testNSConditionLock{
+      NSConditionLock  * cdlock=[[NSConditionLock alloc]initWithCondition:2];
+    
+    dispatch_async(dispatch_get_global_queue(0,DISPATCH_QUEUE_PRIORITY_DEFAULT), ^{
+        NSLog(@"Test NSConditionLock 1 prepare  %@",[NSThread currentThread]);
+        [cdlock lock];
+        NSLog(@"Test NSConditionLock 1 Run");
+        sleep(3);
+          [cdlock unlock];
+        NSLog(@"Test NSConditionLock 1 end");
+    });
+    dispatch_async(dispatch_get_global_queue(0,DISPATCH_QUEUE_PRIORITY_DEFAULT), ^{
+        NSLog(@"Test NSConditionLock 2 prepare  %@",[NSThread currentThread]);
+       [cdlock lock];
+        NSLog(@"Test NSConditionLock 2 Run");
+        
+         [cdlock unlock];
+        NSLog(@"Test NSConditionLock 2 end");
+    });
+    dispatch_async(dispatch_get_global_queue(0,DISPATCH_QUEUE_PRIORITY_DEFAULT), ^{
+        NSLog(@"Test NSConditionLock 3 prepare  %@",[NSThread currentThread]);
+        [cdlock lock];
+        NSLog(@"Test NSConditionLock 3 Run");
+        
+        [cdlock unlock];
+        NSLog(@"Test NSConditionLock 3 end");
+    });
+    
+    
+}
+#pragma mark - NSRecursiveLock
+/*
+ 注: 递归锁可以被同一线程多次请求，而不会引起死锁。
+ 即在同一线程中在未解锁之前还可以上锁, 执行锁中的代码。
+ 这主要是用在循环或递归操作中。
+ - (BOOL)lockBeforeDate:(NSDate *)limit;//触发锁 在等待时间之内
+ */
+-(void)testNSRecursiveLock{
+    NSRecursiveLock * rlock=[[NSRecursiveLock alloc]init];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSLog(@"Test  NSRecursiveLock 1 prepare  %@",[NSThread currentThread]);
+        [rlock lock];
+        NSLog(@"Test NSRecursiveLock 1 Run");
+        sleep(3);
+        //![rlock unlock];
+        NSLog(@"Test NSRecursiveLock 1 end");
+    });
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSLog(@"Test NSRecursiveLock 2 prepare  %@",[NSThread currentThread]);
+        [rlock lock];
+        NSLog(@"Test NSRecursiveLock 2 Run");
+        
+        [rlock unlock];
+        NSLog(@"Test NSRecursiveLock 2 end");
+    });
+    
+}
 #pragma mark -
 #pragma mark -
 @end

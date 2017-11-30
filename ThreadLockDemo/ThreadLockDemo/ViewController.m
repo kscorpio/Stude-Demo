@@ -20,9 +20,9 @@
     // Do any additional setup after loading the view, typically from a nib.
       LockTest * test=[[LockTest alloc]init];
     
-    //111111
+     
     //! testSynchronized
-     //![test testSynchronized];
+    //![test testSynchronized];
     
     
     //! testNSLock
@@ -30,9 +30,14 @@
     
     
     //! testSemaphore
-     [test testSemaphore];
-   
+     //！∂[test testSemaphore];
     
+    
+    //！ [test testPthread_mutex];
+   
+   //！  [test testNSConditionLock];
+    
+    [test testNSRecursiveLock];
     
  
 }
