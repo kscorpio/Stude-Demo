@@ -13,11 +13,15 @@
     pthread_mutex_t mutex_t;
     
 }
+
 @property(nonatomic,strong)NSLock * lock;
 @end
-
+NSString * const ab=@"";
 @implementation LockTest
 #pragma mark -  Synchronized Lock
++(void)load{
+    NSLog(@" LockTest  load ");
+}
 - (void)testSynchronized{
     //!
     //!  两次调用Gcd 执行上锁代码， 第一次执行后，睡眠5s
